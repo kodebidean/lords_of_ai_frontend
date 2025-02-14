@@ -1,0 +1,75 @@
+@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600;700&family=Space+Grotesk:wght@300;400;500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-got-light-bg dark:bg-got-dark-bg text-got-light-text dark:text-got-dark-text font-tech transition-colors duration-200;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-got;
+  }
+}
+
+@layer components {
+  .card {
+    @apply bg-got-light-card dark:bg-got-dark-card border border-got-light-border dark:border-got-dark-border rounded-lg shadow-got dark:shadow-none transition-all duration-200;
+  }
+
+  .btn-primary {
+    @apply bg-got-primary text-white hover:bg-opacity-90 font-tech px-4 py-2 rounded-md transition-all duration-200;
+  }
+
+  .btn-secondary {
+    @apply bg-got-secondary text-white hover:bg-opacity-90 font-tech px-4 py-2 rounded-md transition-all duration-200;
+  }
+
+  .input-got {
+    @apply bg-got-light-card dark:bg-got-dark-card border border-got-light-border dark:border-got-dark-border rounded-md px-4 py-2 focus:ring-2 focus:ring-got-tech focus:border-transparent transition-all duration-200;
+  }
+
+  .nav-link {
+    @apply text-got-light-text dark:text-got-dark-text hover:text-got-tech transition-colors duration-200;
+  }
+
+  /* Efectos especiales */
+  .hover-neon {
+    @apply hover:shadow-neon transition-shadow duration-200;
+  }
+
+  .border-gradient {
+    @apply border-2 border-transparent bg-gradient-to-r from-got-primary to-got-secondary;
+    background-clip: padding-box;
+  }
+}
+
+/* Animaciones personalizadas */
+@keyframes float {
+  0% { transform: translateY(0px); }
+  50% { transform: translateY(-10px); }
+  100% { transform: translateY(0px); }
+}
+
+.animate-float {
+  animation: float 3s ease-in-out infinite;
+}
+
+/* Scrollbar personalizado */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  @apply bg-got-light-bg dark:bg-got-dark-bg;
+}
+
+::-webkit-scrollbar-thumb {
+  @apply bg-got-primary bg-opacity-50 rounded-full;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  @apply bg-opacity-75;
+} 
