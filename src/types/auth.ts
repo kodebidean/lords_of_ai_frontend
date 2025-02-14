@@ -1,15 +1,14 @@
 export interface User {
     id: number;
-    email: string;
     username: string;
-    role: 'admin' | 'user';
+    email: string;
+    role: string;
     bio?: string;
 }
 
 export interface AuthResponse {
     user: User;
     token: string;
-    message: string;
 }
 
 export interface LoginCredentials {
@@ -17,7 +16,15 @@ export interface LoginCredentials {
     password: string;
 }
 
-export interface RegisterCredentials extends LoginCredentials {
+export interface RegisterCredentials {
     username: string;
+    email: string;
+    password: string;
     bio?: string;
+}
+
+export interface ValidationError {
+    msg: string;
+    param?: string;
+    location?: string;
 } 

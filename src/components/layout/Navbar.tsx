@@ -2,21 +2,48 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Bars3Icon, XMarkIcon } from '@heroicons/react/24/outline';
+import { useAuth } from '@/hooks/useAuth';
 
 const navigation = [
     { name: 'Dashboard', href: '/dashboard' },
     { name: 'Modelos', href: '/models' },
     { name: 'Rankings', href: '/rankings' },
+    { name: 'Estadísticas', href: '/statistics' },
+    { name: 'Avanzado', href: '/advanced' },
 ];
 
 export const Navbar = () => {
+    const { user, isAuthenticated, logout } = useAuth();
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
     const router = useRouter();
 
     const handleLogout = () => {
-        localStorage.removeItem('token');
+        logout();
         router.push('/login');
     };
+
+    const authLinks = isAuthenticated ? (
+        <>
+            <Link href="/profile" className="nav-link">
+                {user?.username || 'Perfil'}
+            </Link>
+            <button
+                onClick={handleLogout}
+                className="nav-link"
+            >
+                Cerrar Sesión
+            </button>
+        </>
+    ) : (
+        <>
+            <Link href="/login" className="nav-link">
+                Iniciar Sesión
+            </Link>
+            <Link href="/register" className="nav-link">
+                Registrarse
+            </Link>
+        </>
+    );
 
     return (
         <nav className="bg-got-dark-card border-b border-got-dark-border">
@@ -47,18 +74,7 @@ export const Navbar = () => {
                     </div>
                     <div className="hidden md:block">
                         <div className="ml-4 flex items-center md:ml-6">
-                            <Link
-                                href="/profile"
-                                className="nav-link font-tech px-3 py-2 rounded-md text-sm"
-                            >
-                                Perfil
-                            </Link>
-                            <button
-                                onClick={handleLogout}
-                                className="nav-link font-tech px-3 py-2 rounded-md text-sm hover:text-got-primary"
-                            >
-                                Cerrar Sesión
-                            </button>
+                            {authLinks}
                         </div>
                     </div>
                     <div className="md:hidden">

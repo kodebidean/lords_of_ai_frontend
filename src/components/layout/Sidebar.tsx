@@ -6,7 +6,8 @@ import {
     ComputerDesktopIcon,
     TrophyIcon,
     ChartBarIcon,
-    UserIcon
+    UserIcon,
+    BeakerIcon
 } from '@heroicons/react/24/outline';
 
 interface SidebarProps {
@@ -18,6 +19,7 @@ const navigation = [
     { name: 'Modelos IA', href: '/models', icon: ComputerDesktopIcon },
     { name: 'Rankings', href: '/rankings', icon: TrophyIcon },
     { name: 'Estadísticas', href: '/statistics', icon: ChartBarIcon },
+    { name: 'Avanzado', href: '/advanced', icon: BeakerIcon },
     { name: 'Perfil', href: '/profile', icon: UserIcon },
 ];
 

@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useCallback } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { MainLayout } from '@/components/layout/MainLayout';
 import { ModelCard } from '@/components/models/ModelCard';
 import { Button } from '@/components/common/Button';
@@ -12,28 +12,26 @@ const ITEMS_PER_PAGE = 9;
 
 export default function ModelsPage() {
     const [models, setModels] = useState<AiModel[]>([]);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState('');
+    const [isLoading, setIsLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
     const [page, setPage] = useState(1);
     const [category, setCategory] = useState('');
     const [searchTerm, setSearchTerm] = useState('');
 
     const fetchModels = useCallback(async () => {
         try {
-            setLoading(true);
-            const response = await modelService.getModels({
-                category: category || undefined,
-                page,
-                limit: ITEMS_PER_PAGE
-            });
-            setModels(response.data);
+            setIsLoading(true);
+            const data = await modelService.getModels();
+            setModels(Array.isArray(data) ? data : []);
+            setError(null);
         } catch (err) {
-            setError('Error al cargar los modelos');
             console.error('Error fetching models:', err);
+            setError('Error al cargar los modelos');
+            setModels([]);
         } finally {
-            setLoading(false);
+            setIsLoading(false);
         }
-    }, [category, page]);
+    }, []);
 
     useEffect(() => {
         fetchModels();
@@ -77,13 +75,17 @@ export default function ModelsPage() {
                     </select>
                 </div>
 
-                {loading ? (
+                {isLoading ? (
                     <div className="text-center py-10">
                         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-500 mx-auto"></div>
                     </div>
                 ) : error ? (
                     <div className="text-center py-10 text-red-500">
                         {error}
+                    </div>
+                ) : filteredModels.length === 0 ? (
+                    <div className="text-center py-10">
+                        <p className="text-gray-500">No se encontraron modelos</p>
                     </div>
                 ) : (
                     <>

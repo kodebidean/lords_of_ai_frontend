@@ -1,180 +1,148 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { MainLayout } from '@/components/layout/MainLayout';
-import { modelService } from '@/services/models';
-import { AiModel, ModelMetric } from '@/types/models';
-import { 
-    RadarChart, 
-    PolarGrid, 
-    PolarAngleAxis, 
-    PolarRadiusAxis, 
-    Radar, 
-    ResponsiveContainer,
-    Tooltip,
-    Legend
-} from 'recharts';
+import { ModelComparison, ModelSearch } from '../../components/models';
+import { modelService } from '../../services/models';
+import { AiModel } from '../../types/models';
+import { Card, Button } from '@/components/common';
 
-interface ComparisonData {
-    characteristic: string;
-    [key: string]: string | number;
+interface SearchFilters {
+    query?: string;
+    category?: string;
+    minScore?: number;
+    maxDate?: string;
 }
 
 export default function ComparePage() {
-    const [models, setModels] = useState<AiModel[]>([]);
-    const [selectedModels, setSelectedModels] = useState<number[]>([]);
-    const [metricsData, setMetricsData] = useState<Record<number, ModelMetric[]>>({});
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState('');
+    const [selectedModels, setSelectedModels] = useState<AiModel[]>([]);
+    const [availableModels, setAvailableModels] = useState<AiModel[]>([]);
+    const [isLoading, setIsLoading] = useState(false);
 
     useEffect(() => {
-        const fetchModels = async () => {
-            try {
-                const response = await modelService.getModels();
-                setModels(response.data);
-            } catch (err) {
-                console.error('Error fetching models:', err);
-                setError('Error al cargar los modelos');
-            } finally {
-                setLoading(false);
-            }
-        };
-
         fetchModels();
     }, []);
 
-    const handleModelSelect = async (modelId: number) => {
-        if (selectedModels.includes(modelId)) {
-            setSelectedModels(selectedModels.filter(id => id !== modelId));
-            const newMetricsData = { ...metricsData };
-            delete newMetricsData[modelId];
-            setMetricsData(newMetricsData);
-        } else if (selectedModels.length < 3) {
-            setSelectedModels([...selectedModels, modelId]);
-            try {
-                const metrics = await modelService.getModelMetrics(modelId);
-                setMetricsData(prev => ({
-                    ...prev,
-                    [modelId]: metrics as ModelMetric[]
-                }));
-            } catch (err) {
-                console.error('Error fetching metrics:', err);
-                setError('Error al cargar las métricas');
-            }
+    const fetchModels = async () => {
+        setIsLoading(true);
+        try {
+            const response = await modelService.getModels();
+            setAvailableModels(response.data);
+        } catch (error) {
+            console.error('Error fetching models:', error);
+        } finally {
+            setIsLoading(false);
         }
     };
 
-    const getComparisonData = () => {
-        const allMetrics = new Set<string>();
-        Object.values(metricsData).forEach(metrics => {
-            metrics.forEach(metric => {
-                allMetrics.add(metric.characteristic_name);
-            });
-        });
-
-        return Array.from(allMetrics).map(metricName => {
-            const data: ComparisonData = {
-                characteristic: metricName
-                    .split('_')
-                    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-                    .join(' ')
-            };
-
-            selectedModels.forEach(modelId => {
-                const metric = metricsData[modelId]?.find(
-                    m => m.characteristic_name === metricName
-                );
-                const model = models.find(m => m.model_id === modelId);
-                data[model?.name || ''] = metric?.value || 0;
-            });
-
-            return data;
-        });
+    const handleModelSelect = (model: AiModel) => {
+        if (selectedModels.length < 3 && !selectedModels.find(m => m.model_id === model.model_id)) {
+            setSelectedModels([...selectedModels, model]);
+        }
     };
 
-    const COLORS = ['#10B981', '#3B82F6', '#F43F5E'];
+    const handleModelRemove = (modelId: number) => {
+        setSelectedModels(selectedModels.filter(m => m.model_id !== modelId));
+    };
 
-    if (loading) {
-        return (
-            <MainLayout>
-                <div className="flex justify-center items-center min-h-[600px]">
-                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-got-tech"></div>
-                </div>
-            </MainLayout>
-        );
-    }
+    const handleSearch = async (filters: SearchFilters) => {
+        setIsLoading(true);
+        try {
+            const response = await modelService.searchModels(filters);
+            setAvailableModels(response.data);
+        } catch (error) {
+            console.error('Error searching models:', error);
+        } finally {
+            setIsLoading(false);
+        }
+    };
 
     return (
-        <MainLayout>
-            <div className="py-6">
-                <h1 className="text-3xl font-got bg-gradient-tech text-transparent bg-clip-text mb-6">
-                    Comparar Modelos
-                </h1>
+        <div className="min-h-screen bg-got-dark-bg py-12 px-4">
+            <div className="max-w-7xl mx-auto space-y-8">
+                <div className="text-center mb-12">
+                    <h1 className="text-4xl font-got bg-gradient-tech text-transparent bg-clip-text mb-4">
+                        Comparar Modelos
+                    </h1>
+                    <p className="text-got-dark-text text-xl max-w-2xl mx-auto">
+                        Selecciona hasta 3 modelos para comparar sus características y rendimiento
+                    </p>
+                </div>
 
-                {error && (
-                    <div className="text-got-primary bg-got-primary/10 p-4 rounded-lg mb-6">
-                        {error}
-                    </div>
+                <ModelSearch onSearch={handleSearch} />
+
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                    {selectedModels.map(model => (
+                        <Card key={model.model_id} className="relative">
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                className="absolute top-2 right-2"
+                                onClick={() => handleModelRemove(model.model_id)}
+                            >
+                                ✕
+                            </Button>
+                            <h3 className="text-xl font-got mb-2">{model.name}</h3>
+                            <p className="text-got-dark-text text-sm mb-4">
+                                {model.description}
+                            </p>
+                            <div className="flex justify-between items-center">
+                                <span className="text-got-tech">
+                                    {model.category.category_name}
+                                </span>
+                                <span className="text-got-dark-text">
+                                    ⭐ {model.score}
+                                </span>
+                            </div>
+                        </Card>
+                    ))}
+                    {Array.from({ length: 3 - selectedModels.length }).map((_, i) => (
+                        <Card 
+                            key={`empty-${i}`} 
+                            className="border-2 border-dashed border-got-tech/20 flex items-center justify-center"
+                        >
+                            <p className="text-got-dark-text">
+                                Selecciona un modelo
+                            </p>
+                        </Card>
+                    ))}
+                </div>
+
+                {selectedModels.length > 1 && (
+                    <ModelComparison currentModel={selectedModels[0]} />
                 )}
 
-                <div className="grid gap-6">
-                    <div className="card p-6">
-                        <h2 className="text-xl font-got mb-4">Seleccionar Modelos (máximo 3)</h2>
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                            {models.map(model => (
-                                <button
-                                    key={model.model_id}
-                                    onClick={() => handleModelSelect(model.model_id)}
-                                    className={`p-4 rounded-lg border transition-colors ${
-                                        selectedModels.includes(model.model_id)
-                                            ? 'border-got-tech bg-got-tech/10'
-                                            : 'border-got-light-border dark:border-got-dark-border hover:border-got-tech'
-                                    }`}
-                                >
-                                    <h3 className="font-got text-lg">{model.name}</h3>
-                                    <p className="text-sm text-got-light-text dark:text-got-dark-text">
-                                        {model.developer}
-                                    </p>
-                                </button>
-                            ))}
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {isLoading ? (
+                        <div className="col-span-3 text-center py-8">
+                            <p className="text-got-dark-text">Cargando modelos...</p>
                         </div>
-                    </div>
-
-                    {selectedModels.length > 0 && (
-                        <div className="card p-6">
-                            <h2 className="text-xl font-got mb-4">Comparación de Métricas</h2>
-                            <div className="h-[600px]">
-                                <ResponsiveContainer width="100%" height="100%">
-                                    <RadarChart data={getComparisonData()}>
-                                        <PolarGrid />
-                                        <PolarAngleAxis
-                                            dataKey="characteristic"
-                                            tick={{ fill: 'currentColor', fontSize: 12 }}
-                                        />
-                                        <PolarRadiusAxis angle={30} domain={[0, 100]} />
-                                        {selectedModels.map((modelId, index) => {
-                                            const model = models.find(m => m.model_id === modelId);
-                                            if (!model?.name) return null;
-                                            return (
-                                                <Radar
-                                                    key={modelId}
-                                                    name={model.name}
-                                                    dataKey={model.name}
-                                                    stroke={COLORS[index]}
-                                                    fill={COLORS[index]}
-                                                    fillOpacity={0.6}
-                                                />
-                                            );
-                                        })}
-                                        <Tooltip />
-                                        <Legend />
-                                    </RadarChart>
-                                </ResponsiveContainer>
-                            </div>
-                        </div>
+                    ) : (
+                        availableModels.map(model => (
+                            <Card 
+                                key={model.model_id}
+                                className={`cursor-pointer transition-all duration-200 hover:border-got-tech
+                                    ${selectedModels.find(m => m.model_id === model.model_id) 
+                                        ? 'border-got-tech' 
+                                        : ''}`}
+                                onClick={() => handleModelSelect(model)}
+                            >
+                                <h3 className="text-lg font-got mb-2">{model.name}</h3>
+                                <p className="text-got-dark-text text-sm mb-4 line-clamp-2">
+                                    {model.description}
+                                </p>
+                                <div className="flex justify-between items-center">
+                                    <span className="text-got-tech">
+                                        {model.category.category_name}
+                                    </span>
+                                    <span className="text-got-dark-text">
+                                        ⭐ {model.score}
+                                    </span>
+                                </div>
+                            </Card>
+                        ))
                     )}
                 </div>
             </div>
-        </MainLayout>
+        </div>
     );
 } 

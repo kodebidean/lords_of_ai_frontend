@@ -7,6 +7,7 @@ import { Button } from '@/components/common/Button';
 import { Input } from '@/components/common/Input';
 import { AuthLayout } from '@/components/layout/AuthLayout';
 import { AxiosError } from 'axios';
+import { useRouter } from 'next/navigation';
 
 interface ErrorResponse {
     error: string;
@@ -14,6 +15,7 @@ interface ErrorResponse {
 
 export default function RegisterPage() {
     const { register } = useAuth();
+    const router = useRouter();
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState('');
     const [formData, setFormData] = useState({
@@ -23,6 +25,13 @@ export default function RegisterPage() {
         bio: ''
     });
 
+    const passwordRequirements = [
+        'Mínimo 8 caracteres',
+        'Al menos una letra mayúscula',
+        'Al menos una letra minúscula',
+        'Al menos un número'
+    ];
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setError('');
@@ -30,6 +39,7 @@ export default function RegisterPage() {
 
         try {
             await register(formData);
+            router.push('/login');
         } catch (err) {
             const error = err as AxiosError<ErrorResponse>;
             setError(error.response?.data?.error || 'Error al registrar usuario');
@@ -88,19 +98,15 @@ export default function RegisterPage() {
                         autoComplete="new-password"
                         className="input-got font-tech"
                     />
+                </div>
 
-                    <div>
-                        <label className="block text-sm font-medium text-got-light-text dark:text-got-dark-text mb-1 font-tech">
-                            Bio (opcional)
-                        </label>
-                        <textarea
-                            name="bio"
-                            rows={3}
-                            value={formData.bio}
-                            onChange={handleChange}
-                            className="input-got font-tech w-full resize-none"
-                        />
-                    </div>
+                <div className="text-sm text-gray-600">
+                    <p className="font-medium mb-2">La contraseña debe tener:</p>
+                    <ul className="list-disc pl-5 space-y-1">
+                        {passwordRequirements.map((req, index) => (
+                            <li key={index}>{req}</li>
+                        ))}
+                    </ul>
                 </div>
 
                 <Button

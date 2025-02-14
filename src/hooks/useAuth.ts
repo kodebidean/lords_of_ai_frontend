@@ -1,23 +1,28 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { User } from '../types/auth';
-import { authService } from '../services/auth';
+import { authService } from '@/services/auth';
+import { useContext } from 'react';
+import { AuthContext } from '../contexts/AuthContext';
 
 export const useAuth = () => {
     const [user, setUser] = useState<User | null>(null);
     const [loading, setLoading] = useState(true);
     const router = useRouter();
+    const context = useContext(AuthContext);
+
+    if (!context) {
+        throw new Error('useAuth must be used within an AuthProvider');
+    }
 
     useEffect(() => {
         const checkAuth = async () => {
             try {
-                const response = await fetch('/api/auth/me');
-                if (response.ok) {
-                    const data = await response.json();
-                    setUser(data.user);
-                }
+                const user = await authService.verifyToken();
+                setUser(user);
             } catch (error) {
-                console.error('Error checking auth:', error);
+                console.error('Auth check error:', error);
+                setUser(null);
             } finally {
                 setLoading(false);
             }
@@ -50,7 +55,25 @@ export const useAuth = () => {
         setUser(null);
     };
 
+    const updateProfile = async (userData: {
+        username?: string;
+        email?: string;
+        bio?: string;
+        password?: string;
+        currentPassword?: string;
+    }) => {
+        try {
+            const response = await authService.updateProfile(userData);
+            context.setUser(response);
+            return response;
+        } catch (error) {
+            console.error('Update profile error:', error);
+            throw error;
+        }
+    };
+
     return {
+        ...context,
         user,
         loading,
         isAdmin,
@@ -58,5 +81,6 @@ export const useAuth = () => {
         register,
         logout,
         isAuthenticated: !!user,
+        updateProfile
     };
 }; 

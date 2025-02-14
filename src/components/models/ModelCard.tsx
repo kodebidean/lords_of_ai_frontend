@@ -1,36 +1,24 @@
-import { AiModel } from '@/types/models';
-import { HandThumbUpIcon, HandThumbDownIcon } from '@heroicons/react/24/solid';
-import { modelService } from '@/services/models';
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import Link from 'next/link';
+import { Card } from '../common/Card';
+import { Button } from '../common/Button';
+import { AiModel } from '@/types/models';
+import { modelService } from '@/services/models';
+import { ArrowUpIcon, ArrowDownIcon } from '@heroicons/react/24/outline';
 
-interface ModelCardProps {
+interface Props {
     model: AiModel;
-    onVote?: () => void;
+    onVote: (score: number) => Promise<void>;
 }
 
-export const ModelCard = ({ model, onVote }: ModelCardProps) => {
-    const router = useRouter();
+export const ModelCard = ({ model, onVote }: Props) => {
     const [isVoting, setIsVoting] = useState(false);
-    const [localLikes, setLocalLikes] = useState(model.likes || 0);
-    const [localDislikes, setLocalDislikes] = useState(model.dislikes || 0);
 
-    const handleVote = async (voteType: 'like' | 'dislike') => {
-        if (isVoting) return;
-        
+    const handleVote = async (value: 1 | -1) => {
         try {
             setIsVoting(true);
-            const voteValue = voteType === 'like' ? 1 : -1;
-            await modelService.voteModel(model.model_id, voteValue);
-            
-            // Actualizar contadores locales
-            if (voteType === 'like') {
-                setLocalLikes(prev => prev + 1);
-            } else {
-                setLocalDislikes(prev => prev + 1);
-            }
-            
-            onVote?.();
+            await modelService.voteModel(model.model_id, value);
+            onVote(value);
         } catch (error) {
             console.error('Error voting:', error);
         } finally {
@@ -39,57 +27,51 @@ export const ModelCard = ({ model, onVote }: ModelCardProps) => {
     };
 
     return (
-        <div className="card hover:shadow-lg transition-shadow duration-200">
-            <div className="p-6">
-                <div className="flex justify-between items-start">
-                    <div>
-                        <h3 className="text-xl font-got bg-gradient-tech text-transparent bg-clip-text">
-                            {model.name}
-                        </h3>
-                        <p className="text-got-light-text dark:text-got-dark-text text-sm mt-1">
-                            {model.developer}
-                        </p>
-                    </div>
-                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-tech bg-got-tech/10 text-got-tech">
-                        {model.category_name}
-                    </span>
-                </div>
-
-                <p className="mt-4 text-got-light-text dark:text-got-dark-text line-clamp-2">
-                    {model.description}
-                </p>
-
-                <div className="mt-6 flex items-center justify-between">
-                    <div className="flex space-x-4">
-                        <button
-                            onClick={() => handleVote('like')}
-                            disabled={isVoting}
-                            className={`flex items-center space-x-1 text-got-light-text dark:text-got-dark-text hover:text-got-tech transition-colors ${
-                                isVoting ? 'opacity-50 cursor-not-allowed' : ''
-                            }`}
-                        >
-                            <HandThumbUpIcon className="h-5 w-5" />
-                            <span className="font-tech">{localLikes}</span>
-                        </button>
-                        <button
-                            onClick={() => handleVote('dislike')}
-                            disabled={isVoting}
-                            className={`flex items-center space-x-1 text-got-light-text dark:text-got-dark-text hover:text-got-primary transition-colors ${
-                                isVoting ? 'opacity-50 cursor-not-allowed' : ''
-                            }`}
-                        >
-                            <HandThumbDownIcon className="h-5 w-5" />
-                            <span className="font-tech">{localDislikes}</span>
-                        </button>
-                    </div>
-                    <button
-                        onClick={() => router.push(`/statistics/${model.model_id}`)}
-                        className="text-sm font-tech text-got-tech hover:text-got-tech/80 transition-colors"
+        <Card className="hover:border-got-tech/50 transition-all duration-200">
+            <div className="flex justify-between">
+                <div>
+                    <Link 
+                        href={`/models/${model.model_id}`}
+                        className="text-xl font-got bg-gradient-tech text-transparent bg-clip-text hover:opacity-80"
                     >
-                        Ver Estadísticas →
-                    </button>
+                        {model.name}
+                    </Link>
+                    <p className="text-sm text-got-light-text dark:text-got-dark-text">
+                        {model.developer}
+                    </p>
+                </div>
+                <span className="px-3 py-1 rounded-full text-xs font-medium bg-got-tech/10 text-got-tech">
+                    {model.category.category_name}
+                </span>
+            </div>
+
+            <p className="mt-4 text-sm text-got-light-text dark:text-got-dark-text line-clamp-2">
+                {model.description}
+            </p>
+
+            <div className="mt-4 flex items-center justify-between">
+                <div className="flex space-x-2">
+                    <Button
+                        onClick={() => handleVote(1)}
+                        disabled={isVoting}
+                        variant="outline"
+                        size="sm"
+                    >
+                        <ArrowUpIcon className="h-5 w-5 text-green-500" />
+                    </Button>
+                    <Button
+                        onClick={() => handleVote(-1)}
+                        disabled={isVoting}
+                        variant="outline"
+                        size="sm"
+                    >
+                        <ArrowDownIcon className="h-5 w-5 text-red-500" />
+                    </Button>
+                </div>
+                <div className="text-sm text-got-light-text dark:text-got-dark-text">
+                    Score: {model.vote_score || 0}
                 </div>
             </div>
-        </div>
+        </Card>
     );
 }; 
