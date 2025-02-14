@@ -1,10 +1,9 @@
 export interface User {
-    user_id: number;
-    username: string;
+    id: number;
     email: string;
-    profile_image_url?: string;
+    username: string;
+    role: 'admin' | 'user';
     bio?: string;
-    created_at: string;
 }
 
 export interface AuthResponse {

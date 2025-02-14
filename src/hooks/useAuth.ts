@@ -11,13 +11,13 @@ export const useAuth = () => {
     useEffect(() => {
         const checkAuth = async () => {
             try {
-                if (authService.isAuthenticated()) {
-                    const userData = await authService.getProfile();
-                    setUser(userData);
+                const response = await fetch('/api/auth/me');
+                if (response.ok) {
+                    const data = await response.json();
+                    setUser(data.user);
                 }
             } catch (error) {
                 console.error('Error checking auth:', error);
-                authService.logout();
             } finally {
                 setLoading(false);
             }
@@ -25,6 +25,8 @@ export const useAuth = () => {
 
         checkAuth();
     }, []);
+
+    const isAdmin = user?.role === 'admin';
 
     const login = async (email: string, password: string) => {
         const response = await authService.login({ email, password });
@@ -51,6 +53,7 @@ export const useAuth = () => {
     return {
         user,
         loading,
+        isAdmin,
         login,
         register,
         logout,

@@ -42,43 +42,47 @@ export default function LoginPage() {
         <AuthLayout title="Iniciar Sesión">
             <form onSubmit={handleSubmit} className="space-y-6">
                 {error && (
-                    <div className="bg-red-500 text-white p-3 rounded-md text-sm">
+                    <div className="bg-got-primary/20 text-got-primary p-3 rounded-md text-sm font-tech border border-got-primary/30">
                         {error}
                     </div>
                 )}
 
-                <Input
-                    label="Email"
-                    type="email"
-                    name="email"
-                    value={formData.email}
-                    onChange={handleChange}
-                    required
-                    autoComplete="email"
-                />
+                <div className="space-y-4">
+                    <Input
+                        label="Email"
+                        type="email"
+                        name="email"
+                        value={formData.email}
+                        onChange={handleChange}
+                        required
+                        autoComplete="email"
+                        className="input-got font-tech"
+                    />
 
-                <Input
-                    label="Contraseña"
-                    type="password"
-                    name="password"
-                    value={formData.password}
-                    onChange={handleChange}
-                    required
-                    autoComplete="current-password"
-                />
+                    <Input
+                        label="Contraseña"
+                        type="password"
+                        name="password"
+                        value={formData.password}
+                        onChange={handleChange}
+                        required
+                        autoComplete="current-password"
+                        className="input-got font-tech"
+                    />
+                </div>
 
                 <Button
                     type="submit"
-                    className="w-full"
+                    className="w-full btn-primary hover:shadow-neon"
                     isLoading={isLoading}
                 >
                     Iniciar Sesión
                 </Button>
 
-                <div className="text-sm text-center">
+                <div className="text-sm text-center font-tech">
                     <Link 
                         href="/register" 
-                        className="font-medium text-indigo-400 hover:text-indigo-300"
+                        className="text-got-tech hover:text-got-tech/80 transition-colors duration-200"
                     >
                         ¿No tienes una cuenta? Regístrate
                     </Link>

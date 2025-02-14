@@ -1,11 +1,13 @@
-import { api } from './api';
+import api from './api';
 import { AuthResponse, LoginCredentials, RegisterCredentials, User } from '../types/auth';
+import Cookies from 'js-cookie';
 
 export const authService = {
     async login(credentials: LoginCredentials): Promise<AuthResponse> {
         const { data } = await api.post<AuthResponse>('/users/login', credentials);
         if (data.token) {
-            localStorage.setItem('token', data.token);
+            Cookies.set('token', data.token, { expires: 7 }); // Cookie expira en 7 días
+            localStorage.setItem('token', data.token); // Mantener para compatibilidad
         }
         return data;
     },
@@ -13,6 +15,7 @@ export const authService = {
     async register(credentials: RegisterCredentials): Promise<AuthResponse> {
         const { data } = await api.post<AuthResponse>('/users/register', credentials);
         if (data.token) {
+            Cookies.set('token', data.token, { expires: 7 });
             localStorage.setItem('token', data.token);
         }
         return data;
@@ -29,11 +32,12 @@ export const authService = {
     },
 
     logout(): void {
+        Cookies.remove('token');
         localStorage.removeItem('token');
         window.location.href = '/login';
     },
 
     isAuthenticated(): boolean {
-        return !!localStorage.getItem('token');
+        return !!Cookies.get('token');
     }
 }; 

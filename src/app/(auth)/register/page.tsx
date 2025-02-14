@@ -50,66 +50,71 @@ export default function RegisterPage() {
         <AuthLayout title="Crear Cuenta">
             <form onSubmit={handleSubmit} className="space-y-6">
                 {error && (
-                    <div className="bg-red-500 text-white p-3 rounded-md text-sm">
+                    <div className="bg-got-primary/20 text-got-primary p-3 rounded-md text-sm font-tech border border-got-primary/30">
                         {error}
                     </div>
                 )}
 
-                <Input
-                    label="Nombre de usuario"
-                    type="text"
-                    name="username"
-                    value={formData.username}
-                    onChange={handleChange}
-                    required
-                    autoComplete="username"
-                />
-
-                <Input
-                    label="Email"
-                    type="email"
-                    name="email"
-                    value={formData.email}
-                    onChange={handleChange}
-                    required
-                    autoComplete="email"
-                />
-
-                <Input
-                    label="Contraseña"
-                    type="password"
-                    name="password"
-                    value={formData.password}
-                    onChange={handleChange}
-                    required
-                    autoComplete="new-password"
-                />
-
-                <div>
-                    <label className="block text-sm font-medium text-gray-300">
-                        Bio (opcional)
-                    </label>
-                    <textarea
-                        name="bio"
-                        rows={3}
-                        value={formData.bio}
+                <div className="space-y-4">
+                    <Input
+                        label="Nombre de usuario"
+                        type="text"
+                        name="username"
+                        value={formData.username}
                         onChange={handleChange}
-                        className="mt-1 block w-full rounded-md border-gray-600 bg-gray-700 text-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                        required
+                        autoComplete="username"
+                        className="input-got font-tech"
                     />
+
+                    <Input
+                        label="Email"
+                        type="email"
+                        name="email"
+                        value={formData.email}
+                        onChange={handleChange}
+                        required
+                        autoComplete="email"
+                        className="input-got font-tech"
+                    />
+
+                    <Input
+                        label="Contraseña"
+                        type="password"
+                        name="password"
+                        value={formData.password}
+                        onChange={handleChange}
+                        required
+                        autoComplete="new-password"
+                        className="input-got font-tech"
+                    />
+
+                    <div>
+                        <label className="block text-sm font-medium text-got-light-text dark:text-got-dark-text mb-1 font-tech">
+                            Bio (opcional)
+                        </label>
+                        <textarea
+                            name="bio"
+                            rows={3}
+                            value={formData.bio}
+                            onChange={handleChange}
+                            className="input-got font-tech w-full resize-none"
+                        />
+                    </div>
                 </div>
 
                 <Button
                     type="submit"
-                    className="w-full"
+                    className="w-full btn-primary hover:shadow-neon"
                     isLoading={isLoading}
                 >
                     Registrarse
                 </Button>
 
-                <div className="text-sm text-center">
+                <div className="text-sm text-center font-tech">
                     <Link 
                         href="/login" 
-                        className="font-medium text-indigo-400 hover:text-indigo-300"
+                        className="text-got-tech hover:text-got-tech/80 transition-colors duration-200"
                     >
                         ¿Ya tienes una cuenta? Inicia sesión
                     </Link>
